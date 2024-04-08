@@ -3,36 +3,40 @@
 	import type { PageData } from './$types';
 
 	import PokemonCard from '../components/PokemonCard.svelte';
-	import Header from '../components/Header.svelte';
+	import { generations } from '../scripts/generations.ts';
+	import { caughtPokemons } from '../lib/stores.ts';
     import type { Pokemon } from "./+page.ts";
+  	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
-	let searchString;
+	let searchString = "";
+	$: filteredPokemons = data.pokemons.filter((pokemon: Pokemon) =>
+		pokemon.name.toLowerCase().includes(searchString.toLowerCase())
+	);
 
-	$: pokemonId1 = $page.url.searchParams.get('pokemonId1') || '';
-	$: pokemonId2 = $page.url.searchParams.get('pokemonId2') || '';
-	// $: pokemon1 = data.pokemons.find((pokemon: Pokemon) => +pokemonId1 === pokemon.id);
-	// $: pokemon2 = data.pokemons.find((pokemon: Pokemon) => +pokemonId2 === pokemon.id);
+	$: selectedGenId = $page.url.searchParams.get('genId') || 'all';
+
+	const updateParams = (name: string, value: string) => {
+		const params = new URLSearchParams($page.url.searchParams);
+		params.set(name, value);
+		goto(`?${params.toString()}`);
+	}
 </script>
 
-<!-- {#if pokemon1}
-	<PokemonCard pokemon={pokemon1} {pokemonId1} {pokemonId2} clickable={false} />
-{/if}
-{#if pokemon2}
-	<PokemonCard pokemon={pokemon2} {pokemonId1} {pokemonId2} clickable={false}/>
-{/if} -->
+<header>
+	<ul class="generations">
+		{#each [{id: 'all', main_region: 'All'}, ...generations] as gen (gen.id)}
+			<button class="generation" class:active = {gen.id.toString() === selectedGenId}  on:click={() => updateParams('genId', gen.id.toString())}>{gen.main_region}</button> 
+		{/each}
+	</ul>
 
-<Header>
-	<form action="" slot="input">
-		<input type="text" bind:value={searchString} />
-		<input type="submit" value="Search" />
-	</form>
-</Header>
+	<input type="text" bind:value={searchString} />
 
+</header>
 <ul class="pokemons">
 	{#each filteredPokemons as pokemon (pokemon.id)}
-		<PokemonCard {pokemon} {pokemonId1} {pokemonId2} clickable={true}/>
+		<PokemonCard {pokemon} clickable={true}/>
 	{/each}
 </ul>
 
@@ -43,6 +47,39 @@
 		flex-wrap: wrap;
 		gap: 10px;
 		padding: 10px;
+		/* margin-left: calc(100% - 150px );  */
+	}
+	.generations {
+		width: max(400px, 60%);
+		display: flex;
+		/* justify-content: space-between; */
+		flex-wrap: wrap;
+		gap: 15px;
+	}
+	.generation {
+		padding: 8px 15px;
+		border-radius: 8px;
+	}
+
+	.active {
+		background-color: #999;
+		color: #f5f5f5;
+	}
+
+	header {
+		margin: 30px 40px 20px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	input {
+		border: solid 2px #eee;
+		border-radius: 8px;
+
+		width: min(300px, 20%);
+		height: 32px;
+		padding: 8px;
 	}
 </style>
  

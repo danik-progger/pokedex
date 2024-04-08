@@ -1,21 +1,23 @@
 <script lang="ts">
+  	import { caughtPokemons } from "../lib/stores.ts";
     import type { Pokemon } from "../routes/+page.ts";
     export let pokemon: Pokemon;
-    export let pokemonId1: string;
-    export let pokemonId2: string;
     export let clickable: boolean;
+
+	const catchPokemon = () => {
+		 caughtPokemons.update(pokemons =>
+			[...pokemons, pokemon]
+		 );
+	}
 </script>
 
 <main>
     {#if clickable}
-        <a class="card" href="?pokemonId1={pokemon.id}&pokemonId2={pokemonId2}"> 
+        <button class="card" class:clickable={clickable} on:click={catchPokemon}> 
             <h2 class="pokemon-id">{pokemon.id}</h2>
             <h1>{pokemon.name}</h1>
             <img src={pokemon.image} alt={pokemon.name}>
-        </a>
-        <!-- <a href="?pokemonId1={pokemonId1 }&pokemonId2={pokemon.id}"> 
-            <h1>2</h1>
-        </a> -->
+        </button>
     {:else}
         <div class="card" >
             <h2 class="pokemon-id">{pokemon.id}</h2>
@@ -28,7 +30,7 @@
 <style>
     .card {
 		border: none;
-		width: 150px;
+		min-width: 150px;
 		height: 150px;
 		padding: 10px;
 
@@ -42,7 +44,7 @@
 
 		background-color: #f5f5f5;
 	}
-	.card:hover {
+	.clickable:hover {
 		background-color: #eee;
 	}
 	.card h1, h2 {
